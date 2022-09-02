@@ -51,7 +51,7 @@ const Login = (props) => {
 
     if (loginRes.meta.code === 200) {
       setUser(loginRes.data.user);
-      setToken(loginRes.data.access_token.token);
+      setToken(loginRes.data.access_token);
       navigate("/user");
     } else {
       console.log(loginRes.meta.message);

@@ -1,18 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import useToken from "./useToken";
 
 const useAuthGuard = () => {
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("auth guard", token);
+  const { token } = useToken();
+  // console.log(token);
 
-    const auth = token !== null && token !== "null" ? true : false;
-    console.log("auth guard", auth);
+  useEffect(() => {
+    let auth = false;
+
+    if (token !== null || token !== "null") {
+      const isTokenExpired = new Date() > new Date(token.expires_in * 1000);
+
+      if (!isTokenExpired)
+        auth = true;
+    }
+
+    // console.log("auth", auth);
 
     if (!auth) navigate("/login");
-  }, []);
+  }, [token, navigate]);
 };
 
 export default useAuthGuard;
