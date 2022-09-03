@@ -27,51 +27,53 @@ export default function Dashboard() {
   const [urls, setUrls] = useState([]);
 
   useEffect(() => {
-    async function fetchVisits() {
-      const myUrlReq = await fetch(`${process.env.REACT_APP_API_HOST}/visit/${7}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token.token}`,
-        },
-      });
-
-      const myUrlRes = await myUrlReq.json();
-      console.log(myUrlRes);
-
-      if (myUrlRes.meta.code === 200) {
-        setVisits(myUrlRes.data);
-      } else {
-        console.log(myUrlRes.meta.message);
-        setError(myUrlRes.meta.message);
-      }
-    }
-
-    async function fetchUrls() {
-      const myUrlReq = await fetch(`${process.env.REACT_APP_API_HOST}/my-url`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token.token}`,
-        },
-      });
-
-      const myUrlRes = await myUrlReq.json();
-      console.log(myUrlRes);
-
-      if (myUrlRes.meta.code === 200) {
-        setUrls(myUrlRes.data);
-      } else {
-        console.log(myUrlRes.meta.message);
-        setError(myUrlRes.meta.message);
-      }
-    }
-
-    fetchVisits();
     fetchUrls();
   }, []);
+
+  async function fetchUrls() {
+    const myUrlReq = await fetch(`${process.env.REACT_APP_API_HOST}/my-url`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token.token}`,
+      },
+    });
+
+    const myUrlRes = await myUrlReq.json();
+    console.log(myUrlRes);
+
+    if (myUrlRes.meta.code === 200) {
+      setUrls(myUrlRes.data);
+    } else {
+      console.log(myUrlRes.meta.message);
+      setError(myUrlRes.meta.message);
+    }
+  }
+
+  async function fetchVisits(urlId) {
+    const myUrlReq = await fetch(
+      `${process.env.REACT_APP_API_HOST}/visit/${urlId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token.token}`,
+        },
+      }
+    );
+
+    const myUrlRes = await myUrlReq.json();
+    console.log(myUrlRes);
+
+    if (myUrlRes.meta.code === 200) {
+      setVisits(myUrlRes.data);
+    } else {
+      console.log(myUrlRes.meta.message);
+      setError(myUrlRes.meta.message);
+    }
+  }
 
   function fieldHandler(e) {
     const name = e.target.getAttribute("name");
@@ -113,6 +115,7 @@ export default function Dashboard() {
 
     if (customUrlRes.meta.code === 200) {
       setShortenedUrl(customUrlRes.data.short_url);
+      fetchUrls();
     } else {
       console.log(customUrlRes.meta.message);
       setError(customUrlRes.meta.message);
@@ -161,85 +164,120 @@ export default function Dashboard() {
       </div>
       <div className="flex flex-row mb-4">
         <div className="mr-4">
-          <LineChart width={600} height={300} data={visits}>
-            <Line type="monotone" dataKey="total_visit" stroke="#8884d8" />
-            <CartesianGrid stroke="#ccc" />
-            <XAxis dataKey="date" />
-            <YAxis />
-          </LineChart>
-        </div>
-        <div>
-          {urls.map((url, i) => {
-            return <div key={url.id} className="bg-white p-4 max-w-[500px] rounded-md">
-              <div className="mb-4">
-                <div><strong>{url.name}</strong></div>
-                <div className="flex flex-row">
-                  <input ref={urlRefs.current[i]} value={url.short_url} readOnly className="mr-2 w-full" />
-                  <button onClick={() => copyUrlFromList(urlRefs.current[i])} className="text-gray-500 hover:underline">
-                    <small>Copy</small>
+          <div>
+            <h2 className="mb-0">Total Clicks</h2>
+            <h3 className="font-normal text-base">{visits[0]?.name ?? "Click any link to see total clicks"}</h3>
+            <LineChart width={600} height={300} data={visits}>
+              <Line type="monotone" dataKey="total_visit" stroke="#8884d8" />
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="date" />
+              <YAxis allowDecimals={false} />
+            </LineChart>
+          </div>
+          <div className="mb-8">
+            <h2 className="text-center">Shrink New URL</h2>
+            {error.short_url && (
+              <>
+                <div className="bg-red-500 mb-2 mx-auto p-2 rounded-md text-center text-white w-[500px]">
+                  <span>{error.short_url}</span>
+                </div>
+              </>
+            )}
+            {shortenedUrl && (
+              <>
+                <div className="bg-green-500 flex flex-row items-center justify-between mb-2 mx-auto p-2 rounded-md text-center text-white w-[500px]">
+                  <span>{shortenedUrl}</span>
+                  <button
+                    onClick={copyshortenedUrl}
+                    className="text-white hover:underline"
+                  >
+                    Copy
                   </button>
                 </div>
+              </>
+            )}
+            <form onSubmit={shrinkHandler} className="flex flex-col items-center">
+              <div className="mb-2">
+                <input
+                  type="text"
+                  name="original_url"
+                  onChange={fieldHandler}
+                  className="block p-2 rounded-md shadow-md w-[500px]"
+                  placeholder="https://my-very-long-url.com"
+                />
               </div>
-              <div><small className="leading-none">Destination: {url.original_url}</small></div>
-            </div>
-          })}
+              <div className="mb-2">
+                <input
+                  type="text"
+                  name="name"
+                  onChange={fieldHandler}
+                  className="block p-2 rounded-md shadow-md w-[500px]"
+                  placeholder="My Awesome URL"
+                />
+              </div>
+              <div className="flex flex-row items-center">
+                <span>{shortenerUrlHost}</span>
+                <input
+                  type="text"
+                  name="short_url"
+                  onChange={fieldHandler}
+                  className="bg-transparent block border-b-2 border-blue-500 outline-none mr-2 p-2 w-[210px]"
+                  placeholder="my-url"
+                />
+                <button
+                  type="submit"
+                  className="bg-sky-500 px-4 py-2 rounded-lg text-white hover:bg-sky-600"
+                >
+                  {loading ? "Loading..." : "Shrink"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-      <div className="mb-8">
-        <h2 className="text-center">Shrink New URL</h2>
-        {error.short_url && (
-          <>
-            <div className="bg-red-500 mb-2 p-2 rounded-md w-full text-center text-white">
-              <span>{error.short_url}</span>
-            </div>
-          </>
-        )}
-        {shortenedUrl && (
-          <>
-            <div className="bg-green-500 flex flex-row items-center justify-between mb-2 p-2 rounded-md w-full text-center text-white">
-              <span>{shortenedUrl}</span>
-              <button onClick={copyshortenedUrl} className="text-white hover:underline">
-                Copy
-              </button>
-            </div>
-          </>
-        )}
-        <form onSubmit={shrinkHandler}>
-          <div className="mb-2">
-            <input
-              type="text"
-              name="original_url"
-              onChange={fieldHandler}
-              className="block p-2 rounded-md shadow-md w-[500px]"
-              placeholder="https://my-very-long-url.com"
-            />
+        <div>
+          <h2>My Links</h2>
+          <div className="h-[630px] overflow-auto">
+          {urls.map((url, i) => {
+            return (
+              <a
+                key={url.id}
+                onClick={() => fetchVisits(url.id)}
+                className=" cursor-pointer text-black hover:no-underline"
+              >
+                <div
+                  className="bg-white mb-2 p-4 max-w-[500px] rounded-md hover:bg-blue-200"
+                >
+                  <div className="mb-4">
+                    <div>
+                      <strong>{url.name}</strong>
+                    </div>
+                    <div className="flex flex-row">
+                      <div className="mr-2 w-full">{url.short_url}</div>
+                      <input
+                        ref={urlRefs.current[i]}
+                        value={url.short_url}
+                        className="hidden"
+                        readOnly
+                      />
+                      <button
+                        onClick={() => copyUrlFromList(urlRefs.current[i])}
+                        className="text-gray-500 hover:underline"
+                      >
+                        <small>Copy</small>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <small className="leading-none">
+                      Destination: {url.original_url}
+                    </small>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
           </div>
-          <div className="mb-2">
-            <input
-              type="text"
-              name="name"
-              onChange={fieldHandler}
-              className="block p-2 rounded-md shadow-md w-[500px]"
-              placeholder="My Awesome URL"
-            />
-          </div>
-          <div className="flex flex-row items-center mb-8">
-            <span>{shortenerUrlHost}</span>
-            <input
-              type="text"
-              name="short_url"
-              onChange={fieldHandler}
-              className="bg-transparent block border-b-2 border-blue-500 outline-none mr-2 p-2 w-[210px]"
-              placeholder="my-url"
-            />
-            <button
-              type="submit"
-              className="bg-sky-500 px-4 py-2 rounded-lg text-white hover:bg-sky-600"
-            >
-              {loading ? "Loading..." : "Shrink"}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
