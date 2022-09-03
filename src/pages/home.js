@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ShrinkUrl from "../components/ShrinkUrl";
 import ShortenedUrlNotification from "../components/ShortenedUrlNotification";
-import LoginForCustomUrl from "../components/LoginForCustomUrl";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -41,12 +41,10 @@ export default function Home() {
     setLoading(false);
 
     const res = await req.json();
-    console.log(res);
 
     if (res.meta.code === 200) {
       setShortenedUrl(res.data.short_url);
     } else {
-      console.log(res.meta.message);
       setError(res.meta.message);
     }
   }
@@ -77,7 +75,8 @@ export default function Home() {
         )}
       </div>
       <div>
-        <LoginForCustomUrl />
+        <span className=" text-gray-400">Wanna custom URL? </span>
+        <Link to="/login">Login</Link>
       </div>
     </div>
   );
