@@ -87,7 +87,7 @@ const Register = () => {
             />
           )}
           <form onSubmit={loginHandler}>
-            <div className="mb-1">
+            <div className="mb-2">
               <Input
                 name="email"
                 value={form.email}
@@ -97,7 +97,7 @@ const Register = () => {
               />
               <InputError errors={emailError} />
             </div>
-            <div className="mb-1">
+            <div className="mb-2">
               <Input
                 type="password"
                 value={form.password}

@@ -73,7 +73,7 @@ const Login = () => {
         <div className="mb-8">
           {generalError.length > 0 && <Notification isError={generalError.length > 0} messages={generalError} />}
           <form onSubmit={loginHandler}>
-            <div className="mb-1">
+            <div className="mb-2">
               <Input
                 name="email"
                 value={form.email}
