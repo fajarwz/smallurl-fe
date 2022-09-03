@@ -83,7 +83,7 @@ const Login = () => {
               />
               <InputError errors={emailError} />
             </div>
-            <div className="mb-1">
+            <div className="mb-4">
               <Input
                 type="password"
                 value={form.password}

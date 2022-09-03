@@ -4,47 +4,55 @@ import { useNavigate, Link } from "react-router-dom";
 import useToken from "../../hooks/useToken";
 import useUser from "../../hooks/useUser";
 import useRedirectIfAuth from "../../hooks/useRedirectIfAuth";
+import Notification from "../../components/Notification";
+import Input from "../../components/Input";
+import InputError from "../../components/InputError";
+import SubmitBtn from "../../components/SubmitBtn";
 
-const Register = (props) => {
-  const redirectIfAuth = useRedirectIfAuth();
+const Register = () => {
+  useRedirectIfAuth();
 
-  const { token, setToken } = useToken();
-  const [message, setMessage] = useState("");
-  const { user, setUser } = useUser();
+  const { setToken } = useToken();
+  const { setUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
     name: "",
   });
+  const [emailError, setEmailError] = useState([]);
+  const [passwordError, setPasswordError] = useState([]);
+  const [nameError, setNameError] = useState([]);
+  const [generalError, setGeneralError] = useState([]);
   const navigate = useNavigate();
 
   function fieldHandler(e) {
-    const name = e.target.getAttribute("name");
-
-    setForm({
-      ...form,
-      [name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function loginHandler(e) {
     e.preventDefault();
+    setGeneralError([]);
+    setEmailError([]);
+    setPasswordError([]);
+    setNameError([]);
     setLoading(true);
 
-    const data = new FormData(e.currentTarget);
-    const registerReq = await fetch(`${process.env.REACT_APP_API_HOST}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        email: data.get("email"),
-        password: data.get("password"),
-        name: data.get("name"),
-      }),
-    });
+    const registerReq = await fetch(
+      `${process.env.REACT_APP_API_HOST}/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          name: form.name,
+        }),
+      }
+    );
 
     setLoading(false);
 
@@ -53,11 +61,14 @@ const Register = (props) => {
 
     if (registerRes.meta.code === 200) {
       setUser(registerRes.data.user);
-      setToken(registerRes.data.access_token.token);
+      setToken(registerRes.data.access_token);
       navigate("/user");
     } else {
       console.log(registerRes.meta.message);
-      setMessage(registerRes.meta.message);
+      setGeneralError(registerRes.meta.message.general ?? []);
+      setEmailError(registerRes.meta.message.email ?? []);
+      setPasswordError(registerRes.meta.message.password ?? []);
+      setNameError(registerRes.meta.message.name ?? []);
     }
   }
 
@@ -67,43 +78,54 @@ const Register = (props) => {
         <div className="text-center">
           <h1>SmallUrl</h1>
           <p>Create an account to get your custom URL</p>
-          {message && <div style={{ color: "red" }}>{message}</div>}
         </div>
-        <div>
+        <div className="mb-8">
+          {generalError.length > 0 && (
+            <Notification
+              isError={generalError.length > 0}
+              messages={generalError}
+            />
+          )}
           <form onSubmit={loginHandler}>
-            <div className="mb-4">
-              <input
-                type="text"
+            <div className="mb-1">
+              <Input
                 name="email"
-                onChange={fieldHandler}
-                className="block mb-2 p-2 rounded-md shadow-md w-[400px]"
+                value={form.email}
                 placeholder="Email"
+                fieldHandler={fieldHandler}
+                isError={emailError.length > 0}
               />
-              <input
+              <InputError errors={emailError} />
+            </div>
+            <div className="mb-1">
+              <Input
                 type="password"
+                value={form.password}
                 name="password"
-                onChange={fieldHandler}
-                className="block mb-2 p-2 rounded-md shadow-md w-[400px]"
                 placeholder="Password"
+                fieldHandler={fieldHandler}
+                isError={passwordError.length > 0}
               />
-              <input
-                type="text"
+              <InputError errors={passwordError} />
+            </div>
+            <div className="mb-4">
+              <Input
+                value={form.name}
                 name="name"
-                onChange={fieldHandler}
-                className="block p-2 rounded-md shadow-md w-[400px]"
                 placeholder="Name"
+                fieldHandler={fieldHandler}
+                isError={nameError.length > 0}
               />
+              <InputError errors={nameError} />
             </div>
             <div className="flex flex-row items-center justify-between">
               <Link to="/">Back to Home</Link>
-              <button
-                type="submit"
-                className="bg-sky-500 px-4 py-2 rounded-lg text-white hover:bg-sky-600"
-              >
-                {loading ? "Loading..." : "Register"}
-              </button>
+              <SubmitBtn name={"Register"} loading={loading} />
             </div>
           </form>
+        </div>
+        <div className="">
+          Already have an account? <Link to="/login">Login</Link>
         </div>
       </div>
     </div>

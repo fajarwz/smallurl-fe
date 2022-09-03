@@ -166,7 +166,9 @@ export default function Dashboard() {
         <div className="mr-4">
           <div>
             <h2 className="mb-0">Total Clicks</h2>
-            <h3 className="font-normal text-base">{visits[0]?.name ?? "Click any link to see total clicks"}</h3>
+            <h3 className="font-normal text-base">
+              {visits[0]?.name ?? "Click any link to see total clicks"}
+            </h3>
             <LineChart width={600} height={300} data={visits}>
               <Line type="monotone" dataKey="total_visit" stroke="#8884d8" />
               <CartesianGrid stroke="#ccc" />
@@ -196,7 +198,10 @@ export default function Dashboard() {
                 </div>
               </>
             )}
-            <form onSubmit={shrinkHandler} className="flex flex-col items-center">
+            <form
+              onSubmit={shrinkHandler}
+              className="flex flex-col items-center"
+            >
               <div className="mb-2">
                 <input
                   type="text"
@@ -237,45 +242,49 @@ export default function Dashboard() {
         <div>
           <h2>My Links</h2>
           <div className="h-[630px] overflow-auto">
-          {urls.map((url, i) => {
-            return (
-              <a
-                key={url.id}
-                onClick={() => fetchVisits(url.id)}
-                className=" cursor-pointer text-black hover:no-underline"
-              >
-                <div
-                  className="bg-white mb-2 p-4 max-w-[500px] rounded-md hover:bg-blue-200"
-                >
-                  <div className="mb-4">
-                    <div>
-                      <strong>{url.name}</strong>
+            {urls.length > 0 ? (
+              urls.map((url, i) => {
+                return (
+                  <a
+                    key={url.id}
+                    onClick={() => fetchVisits(url.id)}
+                    className=" cursor-pointer text-black hover:no-underline"
+                  >
+                    <div className="bg-white mb-2 p-4 max-w-[500px] rounded-md hover:bg-blue-200">
+                      <div className="mb-4">
+                        <div>
+                          <strong>{url.name}</strong>
+                        </div>
+                        <div className="flex flex-row">
+                          <div className="mr-2 w-full">{url.short_url}</div>
+                          <input
+                            ref={urlRefs.current[i]}
+                            value={url.short_url}
+                            className="hidden"
+                            readOnly
+                          />
+                          <button
+                            onClick={() => copyUrlFromList(urlRefs.current[i])}
+                            className="text-gray-500 hover:underline"
+                          >
+                            <small>Copy</small>
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <small className="leading-none">
+                          Destination: {url.original_url}
+                        </small>
+                      </div>
                     </div>
-                    <div className="flex flex-row">
-                      <div className="mr-2 w-full">{url.short_url}</div>
-                      <input
-                        ref={urlRefs.current[i]}
-                        value={url.short_url}
-                        className="hidden"
-                        readOnly
-                      />
-                      <button
-                        onClick={() => copyUrlFromList(urlRefs.current[i])}
-                        className="text-gray-500 hover:underline"
-                      >
-                        <small>Copy</small>
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <small className="leading-none">
-                      Destination: {url.original_url}
-                    </small>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
+                  </a>
+                );
+              })
+            ) : (
+              <div>
+                <i>Your links will appear here</i>
+              </div>
+            )}
           </div>
         </div>
       </div>
