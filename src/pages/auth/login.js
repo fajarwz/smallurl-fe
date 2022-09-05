@@ -8,6 +8,8 @@ import Input from "../../components/Input";
 import SubmitBtn from "../../components/SubmitBtn";
 import InputError from "../../components/InputError";
 import Notification from "../../components/Notification";
+import api from "../../services/api";
+import tokenService from "../../services/token.service";
 
 const Login = () => {
   useRedirectIfAuth();
@@ -35,25 +37,21 @@ const Login = () => {
     setPasswordError([]);
     setLoading(true);
 
-    const loginReq = await fetch(`${process.env.REACT_APP_API_HOST}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        email: form.email,
-        password: form.password,
-      }),
+    const loginReq = await api.post(`${process.env.REACT_APP_API_HOST}/login`, {
+      email: form.email,
+      password: form.password,
     });
+
+    console.log(loginReq);
 
     setLoading(false);
 
-    const loginRes = await loginReq.json();
+    const loginRes = await loginReq.data;
 
     if (loginRes.meta.code === 200) {
-      setUser(loginRes.data.user);
-      setToken(loginRes.data.access_token);
+      // setUser(loginRes.data.user);
+      // setToken(loginRes.data.access_token);
+      tokenService.setUser(loginRes.data);
       navigate("/user");
     } else {
       console.log(loginRes.meta.message);

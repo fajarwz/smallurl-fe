@@ -15,7 +15,9 @@ export default function useToken() {
       setToken(null);
     } 
     else {
+      localStorage.removeItem("token");
       localStorage.setItem("token", JSON.stringify(userToken));
+      console.log("set token success", userToken);
       setToken(userToken);
     }
   };

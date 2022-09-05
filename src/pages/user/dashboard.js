@@ -12,6 +12,7 @@ export default function Dashboard() {
   useAuthGuard();
 
   const { token, setToken } = useToken();
+  console.log("dashboard prepare fetch", token);
   const { user, setUser } = useUser();
   const navigate = useNavigate();
 
@@ -36,16 +37,20 @@ export default function Dashboard() {
   }, []);
 
   async function fetchUrls() {
+    const token2 = await JSON.parse(localStorage.getItem("token"));
+    console.log("dashboard fetching", token2);
+
     const myUrlReq = await fetch(`${process.env.REACT_APP_API_HOST}/my-url`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${token.token}`,
+        Authorization: `Bearer ${token2.token}`,
       },
     });
 
     const myUrlRes = await myUrlReq.json();
+    console.log(myUrlRes);
 
     if (myUrlRes.meta.code === 200) {
       setUrls(myUrlRes.data);
@@ -68,7 +73,6 @@ export default function Dashboard() {
     );
 
     const myUrlRes = await myUrlReq.json();
-    console.log(myUrlRes);
 
     if (myUrlRes.meta.code === 200) {
       setVisits(myUrlRes.data);
