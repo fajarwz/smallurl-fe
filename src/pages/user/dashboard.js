@@ -1,19 +1,15 @@
-import useToken from "../../hooks/useToken";
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
-import useAuthGuard from "../../hooks/useAuthGuard";
-import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { useState, useEffect, useRef, createRef } from "react";
 import Input from "../../components/Input";
 import InputError from "../../components/InputError";
 import CardLink from "../../components/CardLink";
+import api from "../../services/api";
+import tokenService from "../../services/token.service";
 
 export default function Dashboard() {
-  useAuthGuard();
-
-  const { token, setToken } = useToken();
-  console.log("dashboard prepare fetch", token);
-  const { user, setUser } = useUser();
+  const { user } = tokenService.getUser();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -37,20 +33,9 @@ export default function Dashboard() {
   }, []);
 
   async function fetchUrls() {
-    const token2 = await JSON.parse(localStorage.getItem("token"));
-    console.log("dashboard fetching", token2);
+    const myUrlReq = await api.get("/my-url");
 
-    const myUrlReq = await fetch(`${process.env.REACT_APP_API_HOST}/my-url`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token2.token}`,
-      },
-    });
-
-    const myUrlRes = await myUrlReq.json();
-    console.log(myUrlRes);
+    const myUrlRes = await myUrlReq.data;
 
     if (myUrlRes.meta.code === 200) {
       setUrls(myUrlRes.data);
@@ -60,19 +45,11 @@ export default function Dashboard() {
   }
 
   async function fetchVisits(urlId) {
-    const myUrlReq = await fetch(
-      `${process.env.REACT_APP_API_HOST}/visit/${urlId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token.token}`,
-        },
-      }
+    const myUrlReq = await api.get(
+      `${process.env.REACT_APP_API_HOST}/visit/${urlId}`
     );
 
-    const myUrlRes = await myUrlReq.json();
+    const myUrlRes = await myUrlReq.data;
 
     if (myUrlRes.meta.code === 200) {
       setVisits(myUrlRes.data);
@@ -93,26 +70,18 @@ export default function Dashboard() {
     setLoading(true);
     setShortenedUrl("");
 
-    const customUrlReq = await fetch(
+    const customUrlReq = await api.post(
       `${process.env.REACT_APP_API_HOST}/custom-url`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token.token}`,
-        },
-        body: JSON.stringify({
-          original_url: form.original_url,
-          short_url: form.short_url,
-          name: form.name,
-        }),
+        original_url: form.original_url,
+        short_url: form.short_url,
+        name: form.name,
       }
     );
 
     setLoading(false);
 
-    const customUrlRes = await customUrlReq.json();
+    const customUrlRes = await customUrlReq.data;
     console.log(customUrlRes);
 
     if (customUrlRes.meta.code === 200) {
@@ -141,13 +110,12 @@ export default function Dashboard() {
   }
 
   function logoutHandler() {
-    setToken("null");
-    setUser("null");
+    tokenService.removeUser();
     navigate("/login");
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
+    <div className="container flex flex-col items-center justify-center min-h-screen">
       <div className="mb-4 text-center">
         <h1>Dashboard</h1>
         <div className="flex flex-row items-center">
@@ -160,34 +128,64 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-      <div className="flex flex-row mb-4">
-        <div className="mr-4">
-          <div>
+      <div className="flex flex-col md:flex-row mb-4">
+        <div className="mb-4 md:mb-0 mr-0 md:mr-8">
+          <h2>My Links</h2>
+          <div className="md:h-[630px] overflow-auto">
+            {urls.length > 0 ? (
+              urls.map((url) => {
+                return (
+                  <a
+                    key={url.id}
+                    onClick={() => fetchVisits(url.id)}
+                    className=" cursor-pointer text-black hover:no-underline"
+                  >
+                    <CardLink
+                      i={url.i}
+                      name={url.name}
+                      urlRefs={urlRefs}
+                      shortUrl={url.short_url}
+                      originalUrl={url.original_url}
+                    />
+                  </a>
+                );
+              })
+            ) : (
+              <div>
+                <i>Your links will appear here</i>
+              </div>
+            )}
+          </div>
+        </div>
+        <div>
+          <div className="mb-4 md:mb-0">
             <h2 className="mb-0">Total Clicks</h2>
             <h3 className="font-normal text-base">
               {visits[0]?.name ?? "Click any link to see total clicks"}
             </h3>
-            <LineChart width={600} height={300} data={visits}>
-              <Line type="monotone" dataKey="total_visit" stroke="#8884d8" />
-              <CartesianGrid stroke="#ccc" />
-              <XAxis dataKey="date" />
-              <YAxis allowDecimals={false} />
-            </LineChart>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={visits}>
+                <Line type="monotone" dataKey="total_visit" stroke="#8884d8" />
+                <CartesianGrid stroke="#ccc" />
+                <XAxis dataKey="date" />
+                <YAxis allowDecimals={false} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
           <div className="mb-8">
             <h2 className="">Shrink New URL</h2>
             {shortenedUrl && (
-              <>
-                <div className="bg-green-500 flex flex-row items-center justify-between mb-2 mx-auto p-2 rounded-md text-center text-white w-[400px]">
-                  <span>{shortenedUrl}</span>
+              <div>
+                <div className="bg-green-500 flex flex-row items-center justify between mb-2 p-2 rounded-md overflow-hidden relative text-center text-white whitespace-nowrap w-[400px]">
+                  <span title={shortenedUrl}>{shortenedUrl}</span>
                   <button
                     onClick={copyshortenedUrl}
-                    className="text-white hover:underline"
+                    className="absolute bg-green-500 h-full right-0 px-3 py-2 text-white hover:underline"
                   >
                     Copy
                   </button>
                 </div>
-              </>
+              </div>
             )}
             <form onSubmit={shrinkHandler} className="flex flex-col">
               <div className="mb-2">
@@ -235,34 +233,6 @@ export default function Dashboard() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-        <div>
-          <h2>My Links</h2>
-          <div className="h-[630px] overflow-auto">
-            {urls.length > 0 ? (
-              urls.map((url) => {
-                return (
-                  <a
-                    key={url.id}
-                    onClick={() => fetchVisits(url.id)}
-                    className=" cursor-pointer text-black hover:no-underline"
-                  >
-                    <CardLink
-                      i={url.i}
-                      name={url.name}
-                      urlRefs={urlRefs}
-                      shortUrl={url.short_url}
-                      originalUrl={url.original_url}
-                    />
-                  </a>
-                );
-              })
-            ) : (
-              <div>
-                <i>Your links will appear here</i>
-              </div>
-            )}
           </div>
         </div>
       </div>

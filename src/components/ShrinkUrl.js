@@ -6,13 +6,13 @@ export default function ShrinkUrl({
 }) {
   return (
     <>
-      <form onSubmit={shrinkHandler}>
-        <div className="flex flex-row mb-1">
+      <form onSubmit={shrinkHandler} className="w-full">
+        <div className="flex flex-col md:flex-row mb-2 justify-center w-full">
           <input
             type="text"
             name="url"
             onChange={fieldHandler}
-            className={`block ${error?.original_url && "border border-red-500"} mr-2 p-2 rounded-md shadow-md w-[400px]`}
+            className={`block ${error?.original_url && "border border-red-500"} mb-2 md:mb-0 mr-0 md:mr-2 p-2 rounded-md shadow-md md:w-[400px]`}
             placeholder="https://my-very-long-url.com"
           />
           <button

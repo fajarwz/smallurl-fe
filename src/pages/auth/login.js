@@ -14,8 +14,6 @@ import tokenService from "../../services/token.service";
 const Login = () => {
   useRedirectIfAuth();
 
-  const { setToken } = useToken();
-  const { setUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -37,7 +35,7 @@ const Login = () => {
     setPasswordError([]);
     setLoading(true);
 
-    const loginReq = await api.post(`${process.env.REACT_APP_API_HOST}/login`, {
+    const loginReq = await api.post("/login", {
       email: form.email,
       password: form.password,
     });
@@ -47,10 +45,9 @@ const Login = () => {
     setLoading(false);
 
     const loginRes = await loginReq.data;
+    console.log("login response", loginRes);
 
     if (loginRes.meta.code === 200) {
-      // setUser(loginRes.data.user);
-      // setToken(loginRes.data.access_token);
       tokenService.setUser(loginRes.data);
       navigate("/user");
     } else {

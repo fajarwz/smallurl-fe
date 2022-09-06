@@ -8,12 +8,12 @@ import Notification from "../../components/Notification";
 import Input from "../../components/Input";
 import InputError from "../../components/InputError";
 import SubmitBtn from "../../components/SubmitBtn";
+import api from "../../services/api";
+import tokenService from "../../services/token.service";
 
 const Register = () => {
   useRedirectIfAuth();
 
-  const { setToken } = useToken();
-  const { setUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -38,30 +38,21 @@ const Register = () => {
     setNameError([]);
     setLoading(true);
 
-    const registerReq = await fetch(
-      `${process.env.REACT_APP_API_HOST}/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-          name: form.name,
-        }),
+    const registerReq = await api.post(
+      `${process.env.REACT_APP_API_HOST}/register`, {
+        email: form.email,
+        password: form.password,
+        name: form.name,
       }
     );
 
     setLoading(false);
 
-    const registerRes = await registerReq.json();
+    const registerRes = await registerReq.data;
     console.log(registerRes);
 
     if (registerRes.meta.code === 200) {
-      setUser(registerRes.data.user);
-      setToken(registerRes.data.access_token);
+      tokenService.setUser(registerRes.data);
       navigate("/user");
     } else {
       console.log(registerRes.meta.message);
