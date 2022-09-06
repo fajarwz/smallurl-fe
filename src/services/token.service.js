@@ -1,10 +1,5 @@
 class TokenService {
   getLocalAccessToken() {
-    // console.log(typeof localStorage.getItem("user"))
-    // const user = localStorage.getItem("user") !== "null" || localStorage.getItem("user") !== "undefined" ? localStorage.getItem("user") : null ;
-    // console.log(user);
-    // console.log(parsedUser);
-    
     try {
       const parsedUser = JSON.parse(localStorage.getItem("user"));
       return parsedUser.access_token.token;

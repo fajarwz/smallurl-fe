@@ -1,19 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import useToken from "./useToken";
+import tokenService from "../services/token.service";
 
 const useRedirectIfAuth = () => {
   const navigate = useNavigate();
-  const { token, setToken } = useToken();
+  const token = tokenService.getLocalAccessToken();
 
   useEffect(() => {
     let auth = false;
 
-    if (token !== null && token !== "null") {
-      const isTokenExpired = new Date() > new Date(token.expires_in * 1000);
-
-      if (!isTokenExpired)
-        auth = true;
+    if (token !== null && token !== "null" && token !== "undefined" && token !== false) {
+      auth = true;
     }
 
     if (auth) navigate("/user");

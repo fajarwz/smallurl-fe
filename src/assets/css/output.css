@@ -647,11 +647,6 @@ video {
   min-height: 100vh;
 }
 
-.min-h-min {
-  min-height: -webkit-min-content;
-  min-height: min-content;
-}
-
 .w-full {
   width: 100%;
 }
@@ -664,8 +659,16 @@ video {
   width: 200px;
 }
 
+.w-\[500px\] {
+  width: 500px;
+}
+
 .max-w-\[500px\] {
   max-width: 500px;
+}
+
+.shrink {
+  flex-shrink: 1;
 }
 
 .cursor-pointer {
@@ -1016,6 +1019,10 @@ a:hover {
 
   .md\:w-\[600px\] {
     width: 600px;
+  }
+
+  .md\:w-\[500px\] {
+    width: 500px;
   }
 
   .md\:flex-row {

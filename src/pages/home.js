@@ -1,50 +1,46 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import ShrinkUrl from "../components/ShrinkUrl";
 import ShortenedUrlNotification from "../components/ShortenedUrlNotification";
 import { Link } from "react-router-dom";
 import api from "../services/api";
+import { INITIAL_STATE, homeReducer } from "../store/reducers/homeReducer";
+import ACTION_TYPES from "../store/actionTypes";
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    url: "",
-  });
-  const [shortenedUrl, setShortenedUrl] = useState("");
-  const [error, setError] = useState(null);
+  const [state, dispatch] = useReducer(homeReducer, INITIAL_STATE);
 
   function fieldHandler(e) {
-    const name = e.target.getAttribute("name");
-
-    setForm({
-      ...form,
-      [name]: e.target.value,
+    dispatch({
+      type: ACTION_TYPES.CHANGE_INPUT,
+      payload: { name: e.target.name, value: e.target.value },
     });
   }
 
-  async function shrinkHandler(e) {
+  const shrinkHandler = async (e) => {
     e.preventDefault();
-    setShortenedUrl("");
-    setError(null);
-    setLoading(true);
 
-    const data = new FormData(e.currentTarget);
-    const req = await api.post(`${process.env.REACT_APP_API_HOST}/short-url`, {
-      original_url: data.get("url"),
-    });
+    dispatch({ type: ACTION_TYPES.FETCH_START });
 
-    setLoading(false);
+    try {
+      const req = await api.post(`${process.env.REACT_APP_API_HOST}/short-url`, {
+        original_url: state.form.originalUrl,
+      });
+  
+      const res = await req.data;
+      
+      if (res.meta.code === 200) {
+        dispatch({ type: ACTION_TYPES.FETCH_SUCCESS, payload: res.data.short_url });
+      } else {
+        dispatch({ type: ACTION_TYPES.FETCH_ERROR, payload: res.meta.message });
+      }
+    } catch (error) {
+      dispatch({ type: ACTION_TYPES.FETCH_ERROR, payload: error });
+    } 
 
-    const res = await req.data;
-
-    if (res.meta.code === 200) {
-      setShortenedUrl(res.data.short_url);
-    } else {
-      setError(res.meta.message);
-    }
-  }
+  };
 
   function copyUrl() {
-    navigator.clipboard.writeText(shortenedUrl);
+    navigator.clipboard.writeText(state.shrinkedUrl);
 
     alert("URL Copied");
   }
@@ -52,18 +48,18 @@ export default function Home() {
   return (
     <div className="container flex flex-col items-center justify-center min-h-screen">
       <h1>SmallUrl</h1>
-      <div className="mb-4 w-full md:w-[600px]">
+      <div className="mb-4 w-full md:w-[500px]">
         <ShrinkUrl
           shrinkHandler={shrinkHandler}
           fieldHandler={fieldHandler}
-          loading={loading}
-          error={error}
+          loading={state.loading}
+          error={state.error}
         />
       </div>
-      <div className="w-full">
-        {shortenedUrl && (
+      <div className="w-[500px]">
+        {state.shrinkedUrl && (
           <ShortenedUrlNotification
-            shortenedUrl={shortenedUrl}
+            shortenedUrl={state.shrinkedUrl}
             copyUrl={copyUrl}
           />
         )}
