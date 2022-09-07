@@ -41,6 +41,7 @@ const Login = () => {
 
       if (loginRes.meta.code === 200) {
         dispatch({ type: ACTION_TYPES.POST_SUCCESS });
+        
         tokenService.setUser(loginRes.data);
         navigate("/user");
       } else {

@@ -11,13 +11,11 @@ class TokenService {
     let user = JSON.parse(localStorage.getItem("user"));
     user.access_token = accessToken;
     localStorage.setItem("user", JSON.stringify(user));
-    console.log("token refreshed", accessToken);
   }
   getUser() {
     return JSON.parse(localStorage.getItem("user"));
   }
   setUser(user) {
-    console.log(JSON.stringify(user));
     localStorage.setItem("user", JSON.stringify(user));
   }
   removeUser() {

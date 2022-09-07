@@ -655,20 +655,16 @@ video {
   width: 400px;
 }
 
-.w-\[200px\] {
-  width: 200px;
-}
-
 .w-\[500px\] {
   width: 500px;
 }
 
-.max-w-\[500px\] {
-  max-width: 500px;
+.w-\[200px\] {
+  width: 200px;
 }
 
-.shrink {
-  flex-shrink: 1;
+.max-w-\[500px\] {
+  max-width: 500px;
 }
 
 .cursor-pointer {
@@ -1015,10 +1011,6 @@ a:hover {
 
   .md\:w-\[400px\] {
     width: 400px;
-  }
-
-  .md\:w-\[600px\] {
-    width: 600px;
   }
 
   .md\:w-\[500px\] {

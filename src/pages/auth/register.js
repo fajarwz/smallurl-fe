@@ -1,8 +1,6 @@
 import "../../assets/css/output.css";
-import { useState } from "react";
+import { useReducer } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import useToken from "../../hooks/useToken";
-import useUser from "../../hooks/useUser";
 import useRedirectIfAuth from "../../hooks/useRedirectIfAuth";
 import Notification from "../../components/Notification";
 import Input from "../../components/Input";
@@ -10,57 +8,52 @@ import InputError from "../../components/InputError";
 import SubmitBtn from "../../components/SubmitBtn";
 import api from "../../services/api";
 import tokenService from "../../services/token.service";
+import { registerReducer, INITIAL_STATE } from "../../store/reducers/auth/registerReducer";
+import ACTION_TYPES from "../../store/actionTypes";
 
 const Register = () => {
   useRedirectIfAuth();
 
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    name: "",
-  });
-  const [emailError, setEmailError] = useState([]);
-  const [passwordError, setPasswordError] = useState([]);
-  const [nameError, setNameError] = useState([]);
-  const [generalError, setGeneralError] = useState([]);
   const navigate = useNavigate();
+  const [state, dispatch] = useReducer(registerReducer, INITIAL_STATE);
 
   function fieldHandler(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    dispatch({
+      type: ACTION_TYPES.CHANGE_INPUT,
+      payload: { name: e.target.name, value: e.target.value },
+    });
   }
 
   async function loginHandler(e) {
     e.preventDefault();
-    setGeneralError([]);
-    setEmailError([]);
-    setPasswordError([]);
-    setNameError([]);
-    setLoading(true);
+    dispatch({ type: ACTION_TYPES.POST_START });
+    
+    try {
+      const registerReq = await api.post("/register", {
+          name: state.form.name,
+          email: state.form.email,
+          password: state.form.password,
+          name: state.form.name,
+        }
+      );
 
-    const registerReq = await api.post(
-      `${process.env.REACT_APP_API_HOST}/register`, {
-        email: form.email,
-        password: form.password,
-        name: form.name,
+      const registerRes = await registerReq.data;
+  
+      if (registerRes.meta.code === 200) {
+        dispatch({ type: ACTION_TYPES.POST_SUCCESS });
+
+        tokenService.setUser(registerRes.data);
+        navigate("/user");
+      } else {
+        dispatch({
+          type: ACTION_TYPES.POST_ERROR,
+          payload: registerRes.meta.message,
+        });
       }
-    );
-
-    setLoading(false);
-
-    const registerRes = await registerReq.data;
-    console.log(registerRes);
-
-    if (registerRes.meta.code === 200) {
-      tokenService.setUser(registerRes.data);
-      navigate("/user");
-    } else {
-      console.log(registerRes.meta.message);
-      setGeneralError(registerRes.meta.message.general ?? []);
-      setEmailError(registerRes.meta.message.email ?? []);
-      setPasswordError(registerRes.meta.message.password ?? []);
-      setNameError(registerRes.meta.message.name ?? []);
+    } catch (error) {
+      console.log(error.response);
     }
+
   }
 
   return (
@@ -71,47 +64,47 @@ const Register = () => {
           <p>Create an account to get your custom URL</p>
         </div>
         <div className="mb-8">
-          {generalError.length > 0 && (
+          {state.error.general.length > 0 && (
             <Notification
-              isError={generalError.length > 0}
-              messages={generalError}
+              isError={state.error.general.length > 0}
+              messages={state.error.general}
             />
           )}
           <form onSubmit={loginHandler}>
             <div className="mb-2">
               <Input
                 name="email"
-                value={form.email}
+                value={state.form.email}
                 placeholder="Email"
                 fieldHandler={fieldHandler}
-                isError={emailError.length > 0}
+                isError={state.error.email.length > 0}
               />
-              <InputError errors={emailError} />
+              <InputError errors={state.error.email} />
             </div>
             <div className="mb-2">
               <Input
                 type="password"
-                value={form.password}
+                value={state.form.password}
                 name="password"
                 placeholder="Password"
                 fieldHandler={fieldHandler}
-                isError={passwordError.length > 0}
+                isError={state.error.password.length > 0}
               />
-              <InputError errors={passwordError} />
+              <InputError errors={state.error.password} />
             </div>
             <div className="mb-4">
               <Input
-                value={form.name}
+                value={state.form.name}
                 name="name"
                 placeholder="Name"
                 fieldHandler={fieldHandler}
-                isError={nameError.length > 0}
+                isError={state.error.name.length > 0}
               />
-              <InputError errors={nameError} />
+              <InputError errors={state.error.name} />
             </div>
             <div className="flex flex-row items-center justify-between">
               <Link to="/">Back to Home</Link>
-              <SubmitBtn name={"Register"} loading={loading} />
+              <SubmitBtn name={"Register"} loading={state.loading} />
             </div>
           </form>
         </div>
