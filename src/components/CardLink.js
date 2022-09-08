@@ -1,4 +1,4 @@
-export default function CardLink({ name, urlRefs, shortUrl, originalUrl, i }) {
+export default function CardLink({ name, cardRef, shortUrl, originalUrl }) {
   function copyUrlFromList(ref) {
     const copyText = ref.current;
 
@@ -19,13 +19,13 @@ export default function CardLink({ name, urlRefs, shortUrl, originalUrl, i }) {
         <div className="flex flex-row">
           <div className="mr-2 w-full">{shortUrl}</div>
           <input
-            ref={urlRefs.current[i]}
+            ref={cardRef}
             value={shortUrl}
             className="hidden"
             readOnly
           />
           <button
-            onClick={() => copyUrlFromList(urlRefs.current[i])}
+            onClick={() => copyUrlFromList(cardRef)}
             className="text-gray-500 hover:underline"
           >
             <small>Copy</small>

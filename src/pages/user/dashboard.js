@@ -113,7 +113,7 @@ export default function Dashboard() {
           <h2>My Links</h2>
           <div className="md:h-[630px] overflow-auto">
             {state.urls.length > 0 ? (
-              state.urls.map((url) => {
+              state.urls.map((url, i) => {
                 return (
                   <a
                     key={url.id}
@@ -121,9 +121,8 @@ export default function Dashboard() {
                     className=" cursor-pointer text-black hover:no-underline"
                   >
                     <CardLink
-                      i={url.i}
                       name={url.name}
-                      urlRefs={urlRefs}
+                      cardRef={urlRefs.current[i]}
                       shortUrl={url.short_url}
                       originalUrl={url.original_url}
                     />
