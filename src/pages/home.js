@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import api from "../services/api";
 import { INITIAL_STATE, homeReducer } from "../store/reducers/homeReducer";
 import ACTION_TYPES from "../store/actionTypes";
+import Footer from "../components/Footer";
 
 export default function Home() {
   const [state, dispatch] = useReducer(homeReducer, INITIAL_STATE);
@@ -68,6 +69,7 @@ export default function Home() {
         <span className=" text-gray-400">Wanna custom URL? </span>
         <Link to="/login">Login</Link>
       </div>
+      <Footer />
     </div>
   );
 }

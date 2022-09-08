@@ -9,6 +9,7 @@ import api from "../../services/api";
 import tokenService from "../../services/token.service";
 import { dashboardReducer, INITIAL_STATE } from "../../store/reducers/user/dashboard";
 import ACTION_TYPES from "../../store/actionTypes";
+import Footer from "../../components/Footer";
 
 export default function Dashboard() {
   const { user } = tokenService.getUser();
@@ -215,6 +216,7 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

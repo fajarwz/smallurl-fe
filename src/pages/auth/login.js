@@ -13,6 +13,7 @@ import {
   loginReducer,
 } from "../../store/reducers/auth/loginReducer";
 import ACTION_TYPES from "../../store/actionTypes";
+import Footer from "../../components/Footer";
 
 const Login = () => {
   useRedirectIfAuth();
@@ -100,6 +101,7 @@ const Login = () => {
         <div className="">
           Need an account? <Link to="/register">Register</Link>
         </div>
+        <Footer />
       </div>
     </div>
   );

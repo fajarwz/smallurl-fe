@@ -10,6 +10,7 @@ import api from "../../services/api";
 import tokenService from "../../services/token.service";
 import { registerReducer, INITIAL_STATE } from "../../store/reducers/auth/registerReducer";
 import ACTION_TYPES from "../../store/actionTypes";
+import Footer from "../../components/Footer";
 
 const Register = () => {
   useRedirectIfAuth();
@@ -111,6 +112,7 @@ const Register = () => {
         <div className="">
           Already have an account? <Link to="/login">Login</Link>
         </div>
+        <Footer />
       </div>
     </div>
   );
